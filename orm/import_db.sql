@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS question_follows;
+DROP TABLE IF EXISTS replies;
+DROP TABLE IF EXISTS question_likes;
+
 CREATE TABLE users (
   id INTEGER PRIMARY KEY,
   fname VARCHAR(255) NOT NULL,
@@ -60,7 +66,27 @@ VALUES
 INSERT INTO
   replies (body, questions_id, author_id)
 VALUES
-  ('The Moon is cheese, you IDIOT!',1,1);
+  ('The Moon is cheese, you IDIOT!',1,1),
+  ('no, peeing your pants is NOT cool',3,2);
   
+INSERT INTO
+  replies (body, questions_id, parent_reply_id, author_id)
+VALUES
+('ackshyually, it is quite cool',3,2,1);
+
+INSERT INTO 
+  question_follows (users_id, questions_id)
+VALUES
+  (2,3),
+  (3,3),
+  (4,3),
+  (6,3);
   
-  
+INSERT INTO 
+  question_likes (users_id,questions_id)
+VALUES
+  (2,3),
+  (3,3),
+  (4,3),
+  (6,3),
+  (1,1);

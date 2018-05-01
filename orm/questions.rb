@@ -1,48 +1,17 @@
 require 'sqlite3'
-require 'singleton'
-
-class QuestionsDBConnection < SQLite3::Database
-  include Singleton
-
-  def initialize
-    super('questions.db')
-    self.type_translation = true
-    self.results_as_hash = true
-  end
-end
-
-class User
-  attr_accessor :fname, :lname
-  
-  def initialize(options)
-    @fname = options['fname']
-    @lname = options['lname']
-  end
-  
-  def self.find_by_id(id)
-    user = QuestionsDBConnection.instance.execute(<<-SQL, id)
-      SELECT * FROM users WHERE id = ?
-    SQL
-    raise 'No User with that id!' if  user.nil? 
-    User.new(user.first)
-  end
-  
-  def self.find_by_name(fname, lname)
-    user = QuestionsDBConnection.instance.execute(<<-SQL, fname, lname)
-      SELECT * FROM users WHERE fname = ? AND lname = ?
-    SQL
-    raise 'No User with that name!' if  user.nil? 
-    User.new(user.first)
-  end
-end
+require_relative 'questions_db_connection'
+require_relative 'user'
+require_relative 'question_follow_like'
+require_relative 'reply'
 
 class Question
-  attr_accessor :title, :body, :associated_author
+  attr_accessor :title, :body, :associated_author, :id 
   
   def initialize(options)
+    @id = options['id']
     @title = options['title']
     @body = options['body']
-    @associate_author = options['associated_author']
+    @associated_author = options['associated_author']
   end
   
   def self.find_by_id(id)
@@ -52,23 +21,57 @@ class Question
     raise 'No Question with that id!' if  question.nil? 
     Question.new(question.first)
   end
-end 
-
-class Reply
-  attr_accessor :body, :questions_id, :author_id, :parent_reply_id
   
-  def initialize(options)  
-    @body = options['body']
-    @questions_id = options['questions_id']
-    @author_id = options['author_id']
-    @parent_reply_id = options['parent_reply_id'] 
-  end
-  
-  def self.find_by_id(id)
-    reply = QuestionsDBConnection.instance.execute(<<-SQL, id)
-      SELECT * FROM replies WHERE id = ?
+  def self.find_by_author_id(author_id)
+    questions = QuestionsDBConnection.instance.execute(<<-SQL, author_id)
+    SELECT * FROM questions WHERE associated_author = ? 
     SQL
-    raise 'No replies with that id!' if  reply.nil? 
-    Reply.new(reply.first)
+    raise "No questions from that author" if questions.empty? 
+    questions.map do |question|
+      Question.new(question)
+    end 
   end
+  
+  def self.most_followed(n)
+    QuestionFollow.most_followed_questions(n)
+  end 
+  
+  def author 
+    User.find_by_id(@associated_author)
+  end 
+  
+  def replies
+    Reply.find_by_question_id(@id)
+  end 
+  
+  def followers
+    QuestionFollow.followers_for_question_id(@id)
+  end 
+  
+  def likers
+    QuestionLike.likers_for_question_id(@id)
+  end
+  
+  def num_likes
+    QuestionLike.num_likes_for_question_id(@id)
+  end
+  
+  def most_liked(n)
+    QuestionLike.most_liked_questions(n)
+  end
+  
+  def save
+    if @id
+      QuestionsDBConnection.instance.execute(<<-SQL,title, body, associated_author, id)
+        UPDATE questions SET title = ?, body = ?, associated_author = ? WHERE id = ?
+      SQL
+      #update
+    else 
+      QuestionsDBConnection.instance.execute(<<-SQL,title, body, associated_author)
+        INSERT INTO questions (title, body, associated_author) VALUES (?,?,?)
+      SQL
+      @id = QuestionsDBConnection.instance.last_insert_row_id
+    end 
+  end 
+  
 end 
