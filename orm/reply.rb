@@ -3,8 +3,9 @@ require_relative 'questions_db_connection'
 require_relative 'questions'
 require_relative 'user'
 require_relative 'question_follow_like'
+require_relative 'superclass'
 
-class Reply
+class Reply < ModelBase 
   attr_accessor :body, :questions_id, :author_id, :parent_reply_id, :id 
   
   def initialize(options) 
@@ -14,15 +15,15 @@ class Reply
     @author_id = options['author_id']
     @parent_reply_id = options['parent_reply_id'] 
   end
-  
-  def self.find_by_id(id)
-    reply = QuestionsDBConnection.instance.execute(<<-SQL, id)
-      SELECT * FROM replies WHERE id = ?
-    SQL
-    raise 'No replies with that id!' if  reply.nil? 
-    Reply.new(reply.first)
-  end
-  
+  # 
+  # def self.find_by_id(id)
+  #   reply = QuestionsDBConnection.instance.execute(<<-SQL, id)
+  #     SELECT * FROM replies WHERE id = ?
+  #   SQL
+  #   raise 'No replies with that id!' if  reply.nil? 
+  #   Reply.new(reply.first)
+  # end
+  # 
   def self.find_by_user_id(author_id)
     replies = QuestionsDBConnection.instance.execute(<<-SQL, author_id)
     SELECT * FROM replies WHERE author_id = ? 

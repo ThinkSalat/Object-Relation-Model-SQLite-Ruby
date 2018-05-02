@@ -3,9 +3,9 @@ require_relative 'questions_db_connection'
 require_relative 'question_follow_like'
 require_relative 'reply'
 require_relative 'questions'
-
-
-class User
+require_relative 'superclass'
+  
+class User < ModelBase 
   attr_accessor :fname, :lname, :id
   
   def initialize(options)
@@ -13,14 +13,14 @@ class User
     @fname = options['fname']
     @lname = options['lname']
   end
-  
-  def self.find_by_id(id)
-    user = QuestionsDBConnection.instance.execute(<<-SQL, id)
-      SELECT * FROM users WHERE id = ?
-    SQL
-    raise 'No User with that id!' if  user.nil? 
-    User.new(user.first)
-  end
+  # 
+  # def self.find_by_id(id)
+  #   user = QuestionsDBConnection.instance.execute(<<-SQL, id)
+  #     SELECT * FROM users WHERE id = ?
+  #   SQL
+  #   raise 'No User with that id!' if  user.nil? 
+  #   User.new(user.first)
+  # end
   
   def self.find_by_name(fname, lname)
     user = QuestionsDBConnection.instance.execute(<<-SQL, fname, lname)

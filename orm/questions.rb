@@ -3,8 +3,9 @@ require_relative 'questions_db_connection'
 require_relative 'user'
 require_relative 'question_follow_like'
 require_relative 'reply'
+require_relative 'superclass'
 
-class Question
+class Question < ModelBase
   attr_accessor :title, :body, :associated_author, :id 
   
   def initialize(options)
@@ -14,13 +15,13 @@ class Question
     @associated_author = options['associated_author']
   end
   
-  def self.find_by_id(id)
-    question = QuestionsDBConnection.instance.execute(<<-SQL, id)
-      SELECT * FROM questions WHERE id = ?
-    SQL
-    raise 'No Question with that id!' if  question.nil? 
-    Question.new(question.first)
-  end
+  # def self.find_by_id(id)
+  #   question = QuestionsDBConnection.instance.execute(<<-SQL, id)
+  #     SELECT * FROM questions WHERE id = ?
+  #   SQL
+  #   raise 'No Question with that id!' if  question.nil? 
+  #   Question.new(question.first)
+  # end
   
   def self.find_by_author_id(author_id)
     questions = QuestionsDBConnection.instance.execute(<<-SQL, author_id)
