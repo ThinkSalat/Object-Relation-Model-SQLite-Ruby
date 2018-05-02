@@ -47,18 +47,11 @@ class ModelBase
   def save
     table = CLASS_TABLES[self.to_s]
       
-    if @id
-      QuestionsDBConnection.instance.execute(<<-SQL  )
-        UPDATE table SET  WHERE id = ?
-      SQL
-      #update
-    else 
-      QuestionsDBConnection.instance.execute(<<-SQL,body, questions_id, author_id, parent_reply_id)
-        INSERT INTO replies (body, questions_id, author_id, parent_reply_id) VALUES (?,?,?,?)
-      SQL
-      @id = QuestionsDBConnection.instance.last_insert_row_id
-      #create 
-    end 
+  #update language 
+    UPDATE table SET ...Interp.... WHERE .... 
+  #create langauge 
+  
+    
   end
   
 end
